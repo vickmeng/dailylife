@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<script src="js/d3.v4.js"></script>
+<body>
+<div id="box" style="width: 600px;height:600px;border: 2px solid brown;margin: 20px">
+
+</div>
+
+</body>
+</html>
+<style>
+    *{margin: 0;padding: 0}
+</style>
+
+
+<script>
+    var data = [
+        {cx:150,cy:50,r:30,color:'#5270d7'},
+        {cx:250,cy:50,r:20,color:'#d752a6'},
+        {cx:350,cy:150,r:30,color:'#52d79e'},
+    ];
+
+    var width = document.getElementById('box').offsetWidth,
+        height = document.getElementById('box').offsetHeight;
+
+    var drag = d3.drag()
+            .on('start',function (d) {
+            })
+            .on('end',function (d) {
+            })
+            .on('drag',function (d) {
+                d3.select(this)
+                        .attr('cx',d.cx=d3.event.x)
+                        .attr('cy',d.cy=d3.event.y)
+            })
+
+
+
+
+
+    var svg = d3.select("#box")
+            .append("svg")
+            .attr("width",width)
+            .attr("height",height);
+
+    var rect = svg
+            .selectAll('circle')
+            .data(data)
+            .enter()
+            .append('circle')
+            .attr('fill',function (d,i) {return d.color})
+            .attr('cx',function (d,i) {return d.cx})
+            .attr('cy',function (d,i) {return d.cy})
+            .attr('r',function (d,i) {return d.r})
+            .call(drag);
+
+
+
+
+
+
+</script>
+
+
+
+
+

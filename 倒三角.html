@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="jquery-1.9.1.min.js" ></script>
+</head>
+<style>
+    .point:hover{opacity:0.9}
+</style>
+<body>
+<div id="box" style="height: 500px ;width: 800px;border: 2px solid #767676"></div>
+
+<svg width="800" height="800" version="1.1"  baseProfile="full">
+    <defs>
+        <marker id="markerCircle" markerWidth="8" markerHeight="8" refx="5" refy="5">
+        <circle cx="5" cy="5" r="3" style="stroke: none; fill:gray;"/>
+        </marker>
+        <marker id="markerArrow" markerWidth="13" markerHeight="13" refx="2" refy="6" orient="auto">
+        <path d="M2,2 L2,11 L10,6 L2,2" style="fill: gray;" />
+        </marker>
+    </defs>
+    <polygon class="point" points="50,50 500,50 430,150 120,150 "
+    style="fill:#ff3636" opacity="0.8"/>
+    <polygon class="point"  points="120,150 430,150 395,200 155,200"
+    style="fill:#ff6244" opacity="0.8"/>
+    <text x="265" y="155" fill="white">↓20%</text>
+
+
+    <g>
+    <path d="M75,100 L50,100 L50,170 L120,170"
+    style="stroke: gray; stroke-width: 1px; fill: none;
+    marker-start: url(#markerCircle);
+    marker-end: url(#markerArrow)"/>
+
+    <rect x="20" y="125" height="30px" width="50px" fill="white">
+    </rect>
+    <text fill="gray" >
+    <tspan x="20" y="135" >aaaaaaa</tspan>
+    <tspan x="20" y="150" >ddddddd</tspan>
+    </text>
+    </g>
+</svg>
+
+</body>
+</html>
+<script >
+    function funnelChart(params) {
+        //声明start
+        var _size = parseInt(params.size),
+            _pending = parseInt(params.size*0.5),
+            _data = params.data,
+            _scale,
+            _incline = 1.8,
+            _minHeight = _size/10,
+            _minWidth = _size/2,
+            jqueryMap = {
+                target:{DOM:$(params.target)},
+                svg:{},
+                defs:{},
+                polygons:[],
+                explains:[],
+                flows:[]
+            },
+            colors = ['#ff3a3a','#ff5722','#ffa500','#ffd700','#f8f946'];
+        var clearDoms,createDoms,
+            countScale,countParams,
+            handleDraw,
+            countTwoPointsDistance,
+            countMidPoint,
+            build;
+        //声明end
+        //清元素start
+        clearDoms = function () {
+            jqueryMap.target.DOM.empty();
+        };
+        //清元素end
+        //生成元素start
+        createDoms = function() {
+            jqueryMap.svg.DOM  = $('<svg version="1.1"  baseProfile="full"></svg>');
+            jqueryMap.target.DOM.append(jqueryMap.svg.DOM);
+            jqueryMap.defs.DOM = $('<defs>'
+                    +'<marker id="markerCircle" markerWidth="8" markerHeight="8" refx="5" refy="5">'
+                    +'<circle cx="5" cy="5" r="3" style="stroke: none; fill:gray;"/>'
+                    +'</marker>'
+                    +'<marker id="markerArrow" markerWidth="13" markerHeight="13" refx="2" refy="6" orient="auto">'
+                    +'<path d="M2,2 L2,11 L10,6 L2,2" style="fill: gray;" />'
+                    +'</marker>'
+                    +'</defs>');
+            jqueryMap.svg.DOM.append(jqueryMap.defs.DOM);
+            //创建多边形start
+            $.each(_data,function (i,v) {
+                var $polygon = $('<polygon></polygon>');
+                jqueryMap.svg.DOM.append($polygon);
+                jqueryMap.polygons.push({DOM:$polygon});
+            });
+            //创建多边形end
+            //创建跳转率文字start
+            $.each(_data,function (i,v) {
+                var $flow = $('<text fill="white">' + (v.flow||'') + '</text>');
+                jqueryMap.svg.DOM.append($flow);
+                jqueryMap.flows.push({DOM:$flow});
+            });
+            //创建跳转率文字end
+            //创建跳转率文字start
+            $.each(_data,function (i,v) {
+                var $explain = $('<g>' +
+                                '<path class="line" style="stroke: gray; stroke-width: 1px; fill: none;"/>'+
+                                '<text fill="gray" >'+
+                                    '<tspan class="title" >'+ v.explainT +'</tspan>'+
+                                    '<tspan class="content" >'+ v.explainC +'</tspan>'+
+                                '</text>'+
+                                '</g>');
+                jqueryMap.svg.DOM.append($explain);
+                jqueryMap.explains.push({DOM:$explain});
+            });
+            //创建跳转率文字end
+        };
+        //生成元素end
+
+        //创建比例尺 start
+        countScale = function() {
+            var total=0;
+            $.each(_data,function (i,v) {
+                total+=v.val;
+            });
+            _scale = _size / total;
+        };
+        //创建比例尺 end
+        //找坐标start
+        countParams = function(){
+            $.each(_data,function (i,v) {
+                //先计算倒三角start
+                var polygon = jqueryMap.polygons[i];
+                var prePolygon = jqueryMap.polygons[i-1];
+                polygon['height'] = Math.max(v.val * _scale ,_minHeight) ;
+                polygon['color'] = v.color||colors[i];
+                if(i != 0){
+                    polygon['TLpoint'] = prePolygon['DLpoint'];
+                    polygon['TRpoint'] = prePolygon['DRpoint'];
+                    if(polygon['TRpoint'][0]-polygon['TLpoint'][0]<_size/4){
+                        polygon['DLpoint'] = [polygon['TLpoint'][0], polygon['TLpoint'][1]+polygon['height']];
+                        polygon['DRpoint'] = [polygon['TRpoint'][0], polygon['DLpoint'][1]];
+                    }else {
+                        polygon['DLpoint'] = [polygon['TLpoint'][0] + polygon['height']/_incline, polygon['TLpoint'][1]+polygon['height']];
+                        polygon['DRpoint'] = [polygon['TRpoint'][0] - polygon['height']/_incline , polygon['DLpoint'][1]];
+                    }
+                }else {//第一个polygon没有上一个的坐标
+                    polygon['TLpoint'] = [0 + _pending,0] ;
+                    polygon['TRpoint'] = [_size + _pending,0];
+                    polygon['DLpoint'] = [polygon['TLpoint'][0] + polygon['height']/_incline , polygon['TLpoint'][1]+polygon['height']];
+                    polygon['DRpoint'] = [polygon['TRpoint'][0] - polygon['height']/_incline , polygon['DLpoint'][1]];
+                }
+                if(countTwoPointsDistance(polygon['DLpoint'],polygon['DRpoint'])[0]<_minWidth){
+                    var TopDistance = countTwoPointsDistance(polygon['TLpoint'],polygon['TRpoint'])[0];
+                    var TopToMidHeight = (TopDistance - _minWidth) / 2 * _incline;
+                    polygon['MLpoint'] = [polygon['TLpoint'][0] + TopToMidHeight/_incline , polygon['TLpoint'][1]+TopToMidHeight];
+                    polygon['MRpoint'] = [polygon['TRpoint'][0] - TopToMidHeight/_incline , polygon['MLpoint'][1] ];
+                    polygon['DLpoint'][0] = polygon['MLpoint'][0];
+                    polygon['DRpoint'][0] = polygon['MRpoint'][0];
+                }
+                //先计算倒三角end
+
+                //计算跳转率start
+                var flow = jqueryMap.flows[i];
+                flow['position'] = countMidPoint([polygon.TLpoint,polygon.TRpoint]);
+                //计算跳转率说明end
+
+                //计算说明start
+                var explain = jqueryMap.explains[i];
+                explain['d'] = countMidPoint([polygon.TRpoint,polygon.DRpoint]);
+                //计算说明end
+            })
+        };
+        //找坐标end
+        //创建尺寸start
+        handleDraw = function() {
+            var totalHeight=0;
+            jqueryMap.svg.DOM.css('background','#f9f9f9');
+            //多边形start
+            $.each(jqueryMap.polygons,function (i,polygon) {
+                totalHeight+=polygon.height;
+                var points = polygon.TLpoint.join(',')+" "
+                        + polygon.TRpoint.join(',')+" "
+                        + (polygon.MRpoint||[]).join(',')+" "
+                        + polygon.DRpoint.join(',')+" "
+                        + polygon.DLpoint.join(',')+" "
+                        + (polygon.MLpoint||[]).join(',');
+                polygon.DOM.attr('points',points);
+                polygon.DOM.css('fill',polygon.color);
+            });
+            //多边形end
+            //跳转率start
+            $.each(jqueryMap.flows,function(i,flow){
+                flow.DOM.attr('x',flow.position[0]-15);
+                flow.DOM.attr('y',flow.position[1]+ 5);
+            });
+            //跳转率end
+            //说明start
+            $.each(jqueryMap.explains,function(i,explain){
+                var startP = [explain.d[0] + _size/50 , explain.d[1]];
+                var endP = [explain.d[0] + _size/5 , explain.d[1]];
+                var path ='M'+startP.join(',')+' '+'L'+endP.join(',');
+                explain.DOM.find('.line').attr('d',path);
+                explain.DOM.find('.title').attr('x',endP[0]+5);
+                explain.DOM.find('.title').attr('y',endP[1]);
+
+                explain.DOM.find('.content').attr('x',endP[0]+5);
+                explain.DOM.find('.content').attr('y',endP[1]+15);
+            });
+            //说明end
+            jqueryMap.svg.DOM.attr('height',totalHeight+10);
+            jqueryMap.svg.DOM.attr('width',_size+2*_pending);
+            jqueryMap.target.DOM.html(jqueryMap.target.DOM.html());//创建的并非svg 的Dom
+        };
+        //创建尺寸 end
+        //计算两点的差start
+        countTwoPointsDistance = function(point1,point2) {
+            return [point2[0]-point1[0],point2[1]-point1[1]]
+        };
+        countMidPoint = function (pointsArr) {
+            var totalx=0,totaly=0
+            pointsArr.forEach(function (v,i,arr) {
+                totalx+=v[0];
+                totaly+=v[1];
+            });
+            return [totalx/pointsArr.length,totaly/pointsArr.length];
+        };
+        //计算两点的差end
+        //开搞start
+        build = function () {
+            clearDoms();
+            createDoms();
+            countScale();
+            countParams();
+            handleDraw();
+        };
+        build();
+        console.log(jqueryMap)
+        //开搞end
+    }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+    var Chart_params = {
+        target:'#box',
+        size:300,
+        data:[
+            {val:2500, flow:'' ,explainT:'111111' ,explainC: 'aaaaaa'},
+            {val:2000, flow:'↓40%' ,explainT:'222222' ,explainC: 'bbbbbb'},
+            {val:1500, flow:'↓30%' ,explainT:'333333' ,explainC: 'cccccc'},
+            {val:1200, flow:'↓20%'  ,explainT:'333333' ,explainC: 'cccccc'},
+            {val:500,  flow:'↓10% '     ,explainT:'444444' ,explainC: 'dddddd'},
+        ]
+    };
+
+    funnelChart(Chart_params)
+
+</script>

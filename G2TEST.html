@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,height=device-height">
+    <title>分组柱状图</title>
+    <style>::-webkit-scrollbar{display:none;}html,body{overflow:hidden;height:100%;}</style>
+</head>
+<body>
+  <div style="width:50%">
+      <div id="mountNode"></div>    
+  </div>
+<script src="https://gw.alipayobjects.com/os/antv/assets/g2/3.0.2/g2.min.js"></script>
+<script src="https://gw.alipayobjects.com/os/antv/assets/data-set/0.8.0/data-set.min.js"></script>
+<script src="./js/moment.js"></script>
+<script>
+ const data = [
+ {time: 1517414400000, value: 3 },
+ {time: 1517500800000, value: 4 },
+ {time: 1517587200000, value: 5 },
+];
+const chart = new G2.Chart({
+ container: 'mountNode',
+ padding:100
+});
+chart.source(data);
+chart.scale('time', {
+  type:'timeCat',
+  mask: 'YYYY-MM-DD dddd' // 指定时间的输出格式
+
+  // formatter:(text)=>{
+
+  //         return moment(+text).format('YYYY-MM-DD dddd');
+  //       }
+});
+chart.interval().position('time*value');
+chart.render();
+</script>
+</body>
+</html>

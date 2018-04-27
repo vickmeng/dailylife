@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<script src="js/d3.v4.js"></script>
+<!--<script src="https://d3js.org/d3.v4.js"></script>-->
+<script src="js/lodash.js"></script>
+<body>
+<div id="sankey" style="width: 80vw;height: 50vw;">
+
+</div>
+
+</body>
+</html>
+<style>
+    *{margin: 0;padding: 0}
+    .nodes rect{fill: #5dd6ff;opacity: 0.5;transition:0.3s}
+    .nodes:hover rect{fill: #0077ff;opacity: 0.8;}
+    .nodes text{fill: #7c7c7c;transition:0.3s}
+    .nodes:hover  text{fill:#ffffff;}
+
+    .links path{stroke: #d3d3d3;opacity: 0.5}
+</style>
+
+
+<script>
+    /**
+     * 我大概会拿到一个树桩数据start 注定要痛苦的转换一下
+     * */
+
+    var data = [
+            {id:1,name:'一级01',value:1000,lv:1},
+
+            {id:2,name:'二级01',value:500,lv:2,parentId:1,lvIndex:0,fmlIndex:0},
+            {id:3,name:'二级02',value:300,lv:2,parentId:1,lvIndex:1,fmlIndex:2},
+            {id:4,name:'二级03',value:100,lv:2,parentId:1,lvIndex:2,fmlIndex:3},
+
+            {id:5,name:'三级01',value:100,lv:3,parentId:1,lvIndex:0,fmlIndex:4},
+
+            {id:6,name:'三级02',value:200,lv:3,parentId:2,lvIndex:1,fmlIndex:0},
+            {id:7,name:'三级03',value:150,lv:3,parentId:2,lvIndex:2,fmlIndex:1},
+            {id:8,name:'三级04',value:150,lv:3,parentId:2,lvIndex:3,fmlIndex:2},
+    ];
+    /**
+     * 我大概会拿到这样的一个数据 end
+     * */
+
+    function TGSankeyChart(targetId,data) {
+        var width = document.getElementById(targetId).offsetWidth,
+                height = document.getElementById(targetId).offsetHeight;
+
+        var total = d3.max(data,function (d) {
+            return d.value;
+        })
+        var target = d3.select("#sankey");
+        target.select('svg').remove();
+        var svg = target
+                .append("svg")
+                .attr("width",width)
+                .attr("height",height);
+
+        var x = d3.scaleBand().rangeRound([0, width]).padding(0.7)
+            ,y = d3.scaleLinear().rangeRound([0,height/1.5]);
+
+        var rectPadding = x.bandwidth()/5
+
+
+        function _rectX(d,i){
+            return x(d.lv);
+        }
+        function _rectY(d,i) {
+            var siblings = _.filter(data,function (o){
+                return o.lv == d.lv&&o.lvIndex<d.lvIndex;
+            });
+            var result = _.sumBy(siblings||[],function (o) {
+                return o.value;
+            })
+            return result?y(result)+d.lvIndex*rectPadding:0;
+        }
+
+        function _linkY(d,i) {
+            var oldBrothers = _.filter(data,function (o){
+                return o.parentId == d.parentId &&o.fmlIndex<d.fmlIndex ;
+            });
+            var result = _.sumBy(oldBrothers ||[],function (o) {
+                return o.value;
+            })
+            return result?y(result):0;
+        }
+
+        function _horizontal(d,i) {
+            if(d.parentId){
+                var parent = _.find(data,function (o) {return o.id == d.parentId});
+                var source=[0,0],target=[0,0];
+                source[0] = _rectX(d,i);
+                source[1] = _rectY(d,i);
+                target[0] = _rectX(parent) + x.bandwidth();
+                target[1] = _linkY(d);
+                return d3.linkHorizontal()({source: source, target:target})
+            }
+        }
+
+        function proportion_total(d,i) {
+            return (d.value/total*100).toFixed(1)+"%";
+        }
+
+        function proportion_papa(d,i) {
+            var parent = _.find(data,function (o) {return o.id == d.parentId});
+            return parent?(d.value/parent.value*100).toFixed(1)+"%":'';
+        }
+
+        x.domain(data.map(function(d) { return d.lv; }));
+        y.domain([0, total]);
+
+        /*添加link start*/
+        var Wrap = svg.append("g").attr("class", "Wrap");
+
+        var links = Wrap.selectAll(".links")
+                .data( data)
+                .enter()
+                .append("g")
+                .attr("class", "links")
+                .attr("transform",function(d) {
+                    return "translate(" + 0 + "," + y(d.value)/2 + ")";
+                });
+
+        links.append("path")
+                .attr('fill','none')
+                .attr('d', _horizontal)
+                .attr("stroke-width",function(d) { return y(d.value);});
+
+        links.append("text")
+                .attr("x",_rectX)
+                .attr("y",_rectY)
+                .text(proportion_papa)
+                .attr("transform", "translate(" + (-x.bandwidth()/1.8) + "," + (-5)+ ")");
+        /*添加link end*/
+
+        /*添加方块儿start*/
+//    var nodesWrap = svg.append("g").classed("nodesWrap", true);
+        var nodes =  Wrap.selectAll(".nodes")
+                .data(data)
+                .enter()
+                .append("g")
+                .classed("nodes", true);
+
+        nodes.append("rect")
+                .attr("x",_rectX)
+                .attr("y",_rectY)
+                .attr("width", x.bandwidth())
+                .attr("height", function(d) { return y(d.value);})
+                .each(function (n) {
+                    svg.attr('height',_rectX(n)+y(n.value))
+                })
+        ;
+
+        nodes.append("text")
+                .attr("x",_rectX)
+                .attr("y",_rectY)
+                .text(function(d) { return d.name;})
+                .attr("transform", "translate(" + 5 + "," + 15+ ")");
+
+        nodes.append("text")
+                .attr("x",_rectX)
+                .attr("y",_rectY)
+                .text(function(d) { return d.value;})
+                .attr("transform", "translate(" + 5 + "," + 30+ ")");
+
+        nodes.append("text")
+                .attr("x",_rectX)
+                .attr("y",_rectY)
+                .text(proportion_total)
+                .attr("transform", "translate(" + 5 + "," + 45+ ")");
+        /*添加方块儿end*/
+
+    };
+
+    TGSankeyChart('sankey',data);
+
+    window.addEventListener('resize',function () {
+        TGSankeyChart('sankey',data)
+    })
+</script>
+
+
+
+
+

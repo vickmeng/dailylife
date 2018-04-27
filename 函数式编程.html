@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title></title>
+        <script src="js/lodash.js"></script>
+    </head>
+    <body>
+
+
+    </body>
+</html>
+<script>
+    var curry = _.curry;
+    var match = curry(function(what, str) {
+        return str.match(what);
+    });
+    var replace = curry(function(what, replacement, str) {
+        return str.replace(what, replacement);
+    });
+    var filter = curry(function(f, ary) {
+        return ary.filter(f);
+    });
+    var map = curry(function(f, ary) {
+        return ary.map(f);
+    });
+
+////////代码组合/////////////////////////////////////////////////////
+    var compose = function(f,g) {
+        return function(x) {
+            return f(g(x));
+        };
+    };
+
+    var toUpperCase = function(x) { return x.toUpperCase(); };
+    var toLowerCase = function(x) { return x.toLowerCase(); };
+
+    var exclaim = function(x) { return x + '!'; };
+
+    var shout = compose(exclaim, toUpperCase);
+
+    var head = function(x) { return x[0]; };
+    var tail = function(x) { return x[x.length-1]; };
+
+    var reverse =function (x) {
+        return x.sort((a,b)=>1)
+    }
+
+    var last = compose(head, reverse);
+
+    var lastUpper = compose(toUpperCase, head, reverse);
+
+    /////////////////
+    var capitalize = function(s){
+        return toUpperCase(head(s)) + toLowerCase(tail(s));
+    };
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

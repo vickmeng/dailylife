@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="js/snap.svg.js"></script>
+    <script src="js/jquery.min.js"></script>
+</head>
+<body>
+    <svg width="0" height="0">
+        <pattern id="pattern" patternUnits="userSpaceOnUse" x="0" y="0" width="10" height="10" viewBox="0 0 10 10">
+            <path d="M-5,0,10,15M0-5,15,10" stroke="white" stroke-width="5"></path>
+        </pattern>
+    </svg>
+    <svg id="svg" width="500" height="500" style="border: 2px solid #7e929b"></svg>
+
+</body>
+</html>
+<script>
+    // Simple dashed pattern on circle with mask
+    var s = Snap("#svg");
+    var bigCircle = s.circle(150, 150, 100).attr({
+        fill: "#bada55",
+        stroke: "#000",
+        strokeWidth: 6
+    });
+    var p = s.path("M110,95,95,110M115,100,100,115").attr({
+        fill: "none",
+        stroke: "#bada55",
+        strokeWidth: 4
+    });
+    var ptrn = p.pattern(100, 100, 10, 10);
+
+    bigCircle.attr({
+        fill: ptrn
+    });
+    //Here is our circle from the first Snap-bit.
+
+    var ring = s.circle(150, 150, 92).attr({
+        fill: "none",
+        stroke: "#fff",
+        strokeWidth: 10
+    });
+
+    s.rect(0, 150, 300, 30).attr({fill: "#85144B"}).insertBefore(bigCircle);
+
+    bigCircle.attr({
+        mask: ring
+    });
+    var mask = s.mask();
+//
+    mask.add(s.rect(0, 0, "100%", "100%").attr({fill: "#fff"}));
+    mask.add(ring.attr({stroke: "#000"}));
+    bigCircle.attr({
+        mask: mask
+    });
+//
+    ring.animate({r: 10}, 1e3);
+</script>

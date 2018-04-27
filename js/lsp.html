@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>this</title>
+    </head>
+    <body>
+
+
+    </body>
+</html>
+<script>
+    function type(p) {
+        /function.(\w*)\(\)/.test(p.constructor); //通过其构造函数来获取对应的类型。
+        return RegExp.$1;
+    }
+
+    type('asd');
+    type([]);
+    type(()=>1);
+    type(function () {
+
+    });
+    type(123);
+
+
+
+
+
+
+</script>

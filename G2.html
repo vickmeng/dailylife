@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,height=device-height">
+    <title>分组柱状图</title>
+    <style>::-webkit-scrollbar{display:none;}html,body{overflow:hidden;height:100%;}</style>
+</head>
+<body>
+  <svg>
+    <defs>
+      <marker id="markerCircle" markerWidth="8" markerHeight="8" refx="5" refy="5">
+      <circle cx="5" cy="5" r="3" style="stroke: none; fill:gray;"/>
+      </marker>
+      <marker id="markerArrow" markerWidth="13" markerHeight="13" refx="2" refy="6" orient="auto">
+      <path d="M2,2 L2,11 L10,6 L2,2" style="fill: gray;" />
+      </marker>
+    </defs>
+  </svg>
+    
+
+
+<div id="mountNode"></div>
+<script src="./js/rxjs.js"></script>
+<script src="https://gw.alipayobjects.com/os/antv/assets/g2/3.0.3/g2.min.js"></script>
+<script src="https://gw.alipayobjects.com/os/antv/assets/data-set/0.8.0/data-set.min.js"></script>
+<script>
+const data = [
+    { year: '1991', value: 3 },
+    { year: '1992', value: 4 },
+    { year: '1993', value: 3.5 },
+    { year: '1994', value: 5 },
+    { year: '1995', value: 4.9 },
+    { year: '1996', value: 6 },
+    { year: '1997', value: 7 },
+    { year: '1998', value: 9 },
+    { year: '1999', value: 13 }
+  ];
+  const chart = new G2.Chart({
+    container: 'mountNode',
+    width: 500,
+    height: 500
+  });
+  chart.source(data);
+  chart.tooltip({
+    hideMarkers: true
+  });
+ 
+  chart.line().position('year*value');
+  chart.point().position('year*value')
+  chart.on('point:click', (ev) => {
+    alert("point click")
+  });
+  chart.render();
+</script>
+</body>
+</html>
