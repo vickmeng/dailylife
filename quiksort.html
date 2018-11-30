@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <script type="text/javascript" src="./js/jquery.min.js" ></script>
+</head>
+
+<body>
+</body>
+</html>
+<!-- <script>
+
+  function swap(array, a, b) {
+    [array[a], array[b]] = [array[b], array[a]];
+  }
+
+  function quick(array, left, right) {
+    let index;
+    if (array.length > 1) {
+      index = partition(array, left, right);
+      if (left < index - 1) {
+        quick(array, left, index - 1);
+      }
+      if (index < right) {
+        quick(array, index, right);
+      }
+    }
+    return array;
+  }
+
+  function quickSort(array) {
+    return quick(array, 0, array.length - 1);
+  };
+
+    // 划分操作函数
+  function partition(array, left, right) {
+    // 用index取中间值而非splice
+    const pivot = array[Math.floor((right + left) / 2)];
+    let i = left;
+    let j = right;
+
+    while (i <= j) {
+      while (compare(array[i], pivot) === -1) {
+        i++;
+      }
+      while (compare(array[j], pivot) === 1) {
+        j--;
+      }
+      if (i <= j) {
+        swap(array, i, j);
+        i++;
+        j--;
+      }
+    }
+    return i;
+  }
+  
+  // 比较函数
+  function compare(a, b) {
+    if (a === b) {
+      return 0;
+    }
+    return a < b ? -1 : 1;
+  }
+
+  var arr = [5,6,2,1,3,4];
+  var arr2= quickSort(arr);
+
+
+</script> -->
+<script>
+  this.quickSort = function(){
+    var self = this
+    var cutoff = 3
+
+    function partition(arr,left,right){ //分割操作
+      var pivot = findPivot(arr,left,right)
+      var length = right - left
+      if (length>cutoff) {
+        var i = left
+        var j = right - 2
+        while(i<=j){
+          while(arr[i]<pivot){
+            i++
+          }
+          while(arr[j]>pivot){
+            j--
+          }
+          if (i<=j) {
+            self.swapItemInArray(i,j)
+            i++
+            j--
+          }
+        }
+        self.swapItemInArray(i,right-1)
+        if (left<i-1) {
+          partition(arr,left,i-1)
+        }
+        if (i+1<right) {
+          partition(arr,i+1,right)
+        }
+      }else{
+        insertSort(left,right)
+      }
+    }
+    function findPivot(arr,left,right){//主元取中位数
+      var center = Math.floor((left+right)/2)
+      if (arr[left] > arr[center]) {
+        self.swapItemInArray(left,center)
+      }
+      if (arr[left] > arr[right]) {
+        self.swapItemInArray(left,right)
+      }
+      if (arr[center] > arr[right]) {
+        self.swapItemInArray(center,right)
+      }
+      self.swapItemInArray(center,right-1)//主元被藏在倒数第二个
+      return arr[right-1]
+    }
+    function insertSort(left,right){ //当分块足够小的时候，用插入排序
+      var len = right - left
+      for (var i = 0; i <= len; i++) {
+        for (var j = i; j > 0; j--) {
+          if (array[j]<array[j-1]) {
+            self.swapItemInArray(j,j-1)
+          }
+        }
+      }
+    }
+    partition(array,0,array.length-1)
+  }
+</script>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="./js/jquery.min.js" ></script>
+
+</head>
+    <body>
+        <div id="mybox"></div>
+    </body>
+</html>
+<script>
+
+function convertImgToBase64(url, callback, outputFormat){
+    var
+        canvas = document.createElement('CANVAS'),
+        ctx = canvas.getContext('2d'),
+        img = new Image
+    ;
+    img.crossOrigin = 'Anonymous';
+    img.src = url;
+    img.onload = function(){
+        canvas.height = img.height;
+        canvas.width = img.width;
+        ctx.drawImage(img,0,0);
+        var dataURL = canvas.toDataURL(outputFormat || 'image/png');
+        callback.call(this, dataURL);
+        canvas = null; 
+    };
+}
+ 
+ 
+convertImgToBase64('https://img.alicdn.com/bao/uploaded/i3/2527164933/O1CN015bC6kq1mJMGXUumBX_!!0-item_pic.jpg', function(base64Img){
+  // Base64DataURL
+  console.log(base64Img)
+  var $img = $('<img />').attr('src',base64Img);
+  console.log($img)
+  $('#mybox').append($img);
+//   var img = document.createElement('img');
+//   img.src = base64Img;
+  
+});
+</script>
+<!-- <script>
+    var $img = $('img');
+  $('#mybox').append($img);
+  </script> -->
